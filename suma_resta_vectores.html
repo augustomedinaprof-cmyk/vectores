@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suma y resta de vectores</title>
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial, Helvetica, sans-serif;
+      background:linear-gradient(135deg,#14213d,#00a6fb);
+      color:#111;
+      padding:18px;
+    }
+    .contenedor{
+      max-width:1050px;
+      margin:auto;
+      background:#ffffff;
+      border-radius:22px;
+      padding:24px;
+      box-shadow:0 20px 45px rgba(0,0,0,.25);
+    }
+    h1{
+      text-align:center;
+      color:#14213d;
+      margin-bottom:8px;
+      font-size:clamp(28px,5vw,48px);
+    }
+    .subtitulo{
+      text-align:center;
+      font-size:18px;
+      color:#444;
+      margin-bottom:22px;
+    }
+    .teoria{
+      background:#eef8ff;
+      border-left:8px solid #00a6fb;
+      border-radius:14px;
+      padding:16px;
+      margin-bottom:22px;
+      line-height:1.5;
+    }
+    .formula{
+      background:#14213d;
+      color:white;
+      padding:14px;
+      border-radius:14px;
+      font-size:20px;
+      text-align:center;
+      margin:12px 0;
+      overflow-x:auto;
+    }
+    .botones{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:center;
+      margin:20px 0;
+    }
+    button{
+      border:none;
+      border-radius:14px;
+      padding:13px 18px;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+      background:#00a6fb;
+      color:white;
+      transition:.2s;
+    }
+    button:hover{transform:scale(1.04); background:#0077b6}
+    .btn-sec{background:#f77f00}
+    .btn-sec:hover{background:#d66d00}
+    .btn-fin{background:#2d6a4f}
+    .btn-fin:hover{background:#1b4332}
+    .ejercicios{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:18px;
+    }
+    .tarjeta{
+      border:2px solid #dbe7f3;
+      border-radius:18px;
+      padding:16px;
+      background:#fafafa;
+    }
+    .tarjeta h3{margin-top:0;color:#14213d}
+    .consigna{font-size:17px;line-height:1.5;margin-bottom:10px}
+    .vector-dibujo{
+      width:100%;
+      height:155px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid #ddd;
+      margin:10px 0;
+    }
+    label{font-weight:bold;display:block;margin-top:8px}
+    input{
+      width:100%;
+      padding:11px;
+      border-radius:10px;
+      border:1px solid #aaa;
+      font-size:16px;
+      margin-top:5px;
+    }
+    .respuesta{
+      margin-top:12px;
+      padding:12px;
+      border-radius:12px;
+      display:none;
+      line-height:1.45;
+    }
+    .bien{background:#d8f3dc;border:2px solid #52b788}
+    .mal{background:#ffe5e5;border:2px solid #ef476f}
+    .resultado-final{
+      display:none;
+      margin-top:24px;
+      background:#fff3cd;
+      border:2px solid #ffbf00;
+      border-radius:18px;
+      padding:18px;
+      font-size:18px;
+      line-height:1.6;
+    }
+    .nota{
+      font-size:14px;
+      color:#555;
+      text-align:center;
+      margin-top:25px;
+    }
+    .mini{
+      font-size:14px;
+      color:#555;
+    }
+    @media(max-width:600px){
+      .contenedor{padding:16px;border-radius:16px}
+      button{width:100%}
+      .subtitulo{font-size:16px}
+    }
+  </style>
+</head>
+<body>
+  <main class="contenedor">
+    <h1>Suma y resta de vectores</h1>
+    <p class="subtitulo">Ejercicios interactivos para practicar componentes, suma, resta, módulo y dirección.</p>
+
+    <section class="teoria">
+      <h2>Recordemos</h2>
+      <p>Un vector puede escribirse con sus componentes: <b>A = (Ax ; Ay)</b>. Para sumar o restar vectores, se trabaja componente por componente.</p>
+      <div class="formula">A + B = (Ax + Bx ; Ay + By)</div>
+      <div class="formula">A - B = (Ax - Bx ; Ay - By)</div>
+      <div class="formula">|R| = √(Rx² + Ry²)</div>
+      <p class="mini">En los ejercicios con módulo, escribí el resultado con 2 decimales si hace falta.</p>
+    </section>
+
+    <div class="botones">
+      <button onclick="generarEjercicios()">Generar nuevos ejercicios</button>
+      <button class="btn-sec" onclick="verificarTodo()">Verificar respuestas</button>
+      <button class="btn-fin" onclick="mostrarResultadoFinal()">Ver resultados al final</button>
+    </div>
+
+    <section id="zonaEjercicios" class="ejercicios"></section>
+
+    <section id="resultadoFinal" class="resultado-final"></section>
+
+    <p class="nota">Archivo listo para usar en celular, computadora y GitHub Pages.</p>
+  </main>
+
+  <script>
+    let ejercicios = [];
+    let verificados = false;
+
+    function entero(min,max){
+      return Math.floor(Math.random()*(max-min+1))+min;
+    }
+
+    function formatoVector(v){
+      return `(${v.x} ; ${v.y})`;
+    }
+
+    function modulo(v){
+      return Math.sqrt(v.x*v.x + v.y*v.y);
+    }
+
+    function redondear(n){
+      return Math.round(n*100)/100;
+    }
+
+    function casiIgual(a,b){
+      return Math.abs(Number(a)-Number(b)) <= 0.05;
+    }
+
+    function crearVector(){
+      let x = entero(-9,9);
+      let y = entero(-9,9);
+      if(x===0 && y===0) x=entero(1,9);
+      return {x,y};
+    }
+
+    function generarEjercicios(){
+      verificados = false;
+      document.getElementById('resultadoFinal').style.display='none';
+      ejercicios = [];
+      const tipos = ['suma','resta','suma3','restaComponentes','moduloSuma','moduloResta'];
+
+      for(let i=0;i<6;i++){
+        const tipo = tipos[i];
+        const A = crearVector();
+        const B = crearVector();
+        const C = crearVector();
+        let consigna='', solucion={}, campos=[];
+
+        if(tipo==='suma'){
+          consigna = `Dados A = ${formatoVector(A)} y B = ${formatoVector(B)}, calcular R = A + B.`;
+          solucion = {x:A.x+B.x, y:A.y+B.y};
+          campos = ['x','y'];
+        }
+        if(tipo==='resta'){
+          consigna = `Dados A = ${formatoVector(A)} y B = ${formatoVector(B)}, calcular R = A - B.`;
+          solucion = {x:A.x-B.x, y:A.y-B.y};
+          campos = ['x','y'];
+        }
+        if(tipo==='suma3'){
+          consigna = `Dados A = ${formatoVector(A)}, B = ${formatoVector(B)} y C = ${formatoVector(C)}, calcular R = A + B + C.`;
+          solucion = {x:A.x+B.x+C.x, y:A.y+B.y+C.y};
+          campos = ['x','y'];
+        }
+        if(tipo==='restaComponentes'){
+          consigna = `Dados A = ${formatoVector(A)}, B = ${formatoVector(B)} y C = ${formatoVector(C)}, calcular R = A + B - C.`;
+          solucion = {x:A.x+B.x-C.x, y:A.y+B.y-C.y};
+          campos = ['x','y'];
+        }
+        if(tipo==='moduloSuma'){
+          const R = {x:A.x+B.x, y:A.y+B.y};
+          consigna = `Dados A = ${formatoVector(A)} y B = ${formatoVector(B)}, calcular el módulo de R = A + B.`;
+          solucion = {mod:redondear(modulo(R)), rx:R.x, ry:R.y};
+          campos = ['mod'];
+        }
+        if(tipo==='moduloResta'){
+          const R = {x:A.x-B.x, y:A.y-B.y};
+          consigna = `Dados A = ${formatoVector(A)} y B = ${formatoVector(B)}, calcular el módulo de R = A - B.`;
+          solucion = {mod:redondear(modulo(R)), rx:R.x, ry:R.y};
+          campos = ['mod'];
+        }
+
+        ejercicios.push({tipo,A,B,C,consigna,solucion,campos});
+      }
+      dibujarEjercicios();
+    }
+
+    function dibujarEjercicios(){
+      const zona = document.getElementById('zonaEjercicios');
+      zona.innerHTML = '';
+      ejercicios.forEach((ej,i)=>{
+        const div = document.createElement('div');
+        div.className='tarjeta';
+        let inputs='';
+        if(ej.campos.includes('x')){
+          inputs += `<label>Componente x de R:</label><input type="number" step="any" id="x${i}" placeholder="Ejemplo: 4">`;
+          inputs += `<label>Componente y de R:</label><input type="number" step="any" id="y${i}" placeholder="Ejemplo: -2">`;
+        }
+        if(ej.campos.includes('mod')){
+          inputs += `<label>Módulo de R:</label><input type="number" step="any" id="mod${i}" placeholder="Ejemplo: 5.39">`;
+        }
+        div.innerHTML = `
+          <h3>Ejercicio ${i+1}</h3>
+          <p class="consigna">${ej.consigna}</p>
+          <canvas class="vector-dibujo" id="canvas${i}" width="400" height="155"></canvas>
+          ${inputs}
+          <button style="margin-top:12px" onclick="verificarUno(${i})">Verificar ejercicio</button>
+          <div class="respuesta" id="resp${i}"></div>
+        `;
+        zona.appendChild(div);
+      });
+      ejercicios.forEach((_,i)=>dibujarCanvas(i));
+    }
+
+    function dibujarCanvas(i){
+      const canvas = document.getElementById('canvas'+i);
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0,0,w,h);
+      ctx.strokeStyle='#ddd';
+      ctx.lineWidth=1;
+      for(let x=0;x<w;x+=25){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+      for(let y=0;y<h;y+=25){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+      ctx.strokeStyle='#333';
+      ctx.beginPath();ctx.moveTo(0,h/2);ctx.lineTo(w,h/2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(w/2,0);ctx.lineTo(w/2,h);ctx.stroke();
+      dibujarFlecha(ctx,w/2,h/2,ejercicios[i].A.x*12, -ejercicios[i].A.y*12,'A');
+      dibujarFlecha(ctx,w/2,h/2,ejercicios[i].B.x*12, -ejercicios[i].B.y*12,'B');
+    }
+
+    function dibujarFlecha(ctx,ox,oy,dx,dy,texto){
+      const x2=ox+dx, y2=oy+dy;
+      ctx.strokeStyle = texto==='A' ? '#0077b6' : '#f77f00';
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.lineWidth=3;
+      ctx.beginPath();ctx.moveTo(ox,oy);ctx.lineTo(x2,y2);ctx.stroke();
+      const ang=Math.atan2(y2-oy,x2-ox);
+      ctx.beginPath();
+      ctx.moveTo(x2,y2);
+      ctx.lineTo(x2-10*Math.cos(ang-Math.PI/6), y2-10*Math.sin(ang-Math.PI/6));
+      ctx.lineTo(x2-10*Math.cos(ang+Math.PI/6), y2-10*Math.sin(ang+Math.PI/6));
+      ctx.closePath();ctx.fill();
+      ctx.font='bold 16px Arial';
+      ctx.fillText(texto,x2+5,y2-5);
+    }
+
+    function verificarUno(i){
+      const ej = ejercicios[i];
+      const resp = document.getElementById('resp'+i);
+      let correcto = true;
+      let detalle = '';
+
+      if(ej.campos.includes('x')){
+        const x = document.getElementById('x'+i).value;
+        const y = document.getElementById('y'+i).value;
+        correcto = Number(x)===ej.solucion.x && Number(y)===ej.solucion.y;
+        detalle = `Resultado correcto: R = (${ej.solucion.x} ; ${ej.solucion.y})`;
+      }
+      if(ej.campos.includes('mod')){
+        const m = document.getElementById('mod'+i).value;
+        correcto = casiIgual(m,ej.solucion.mod);
+        detalle = `Primero: R = (${ej.solucion.rx} ; ${ej.solucion.ry})<br>Luego: |R| = √(${ej.solucion.rx}² + ${ej.solucion.ry}²) = ${ej.solucion.mod}`;
+      }
+
+      resp.style.display='block';
+      resp.className = correcto ? 'respuesta bien' : 'respuesta mal';
+      resp.innerHTML = correcto ? `✅ Correcto.<br>${detalle}` : `❌ Revisar.<br>${detalle}`;
+      return correcto;
+    }
+
+    function verificarTodo(){
+      let bien=0;
+      ejercicios.forEach((_,i)=>{ if(verificarUno(i)) bien++; });
+      verificados=true;
+      const final = document.getElementById('resultadoFinal');
+      final.style.display='block';
+      final.innerHTML = `<h2>Resultado parcial</h2>Respuestas correctas: <b>${bien} de ${ejercicios.length}</b>.`;
+    }
+
+    function mostrarResultadoFinal(){
+      let html = '<h2>Resultados finales</h2>';
+      let bien=0;
+      ejercicios.forEach((ej,i)=>{
+        const correcto = verificarUno(i);
+        if(correcto) bien++;
+        if(ej.campos.includes('x')){
+          html += `<p><b>Ejercicio ${i+1}:</b> R = (${ej.solucion.x} ; ${ej.solucion.y})</p>`;
+        } else {
+          html += `<p><b>Ejercicio ${i+1}:</b> R = (${ej.solucion.rx} ; ${ej.solucion.ry}) y |R| = ${ej.solucion.mod}</p>`;
+        }
+      });
+      html += `<hr><p><b>Puntaje:</b> ${bien} de ${ejercicios.length} correctas.</p>`;
+      if(bien===ejercicios.length) html += '<p>🎉 Excelente trabajo. Dominás la suma y resta de vectores.</p>';
+      else if(bien>=4) html += '<p>👍 Muy bien. Falta revisar algunos signos y componentes.</p>';
+      else html += '<p>📌 Conviene repasar: se suma o resta componente por componente.</p>';
+      const final = document.getElementById('resultadoFinal');
+      final.innerHTML=html;
+      final.style.display='block';
+      verificados=true;
+    }
+
+    generarEjercicios();
+  </script>
+</body>
+</html>
